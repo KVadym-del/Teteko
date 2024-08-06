@@ -12,7 +12,6 @@ Client::Client(std::uint16_t port, std::string ip) : m_port(port), m_ip(ip)
     m_serverAddress.sin_family = AF_INET;
     m_serverAddress.sin_port = htons(m_port);
 
-    // Convert IPv4 and IPv6 addresses from text to binary form
     if (inet_pton(AF_INET, "127.0.0.1", &m_serverAddress.sin_addr) <= 0)
     {
         std::print(stderr, "Invalid address/ Address not supported\n");

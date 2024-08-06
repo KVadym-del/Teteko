@@ -21,11 +21,9 @@ Server::Server(std::uint16_t port) : m_port(port)
         std::print("New connection, socket fd is {} , IP is : {} , port : {}\n", m_newSocket,
                    inet_ntoa(m_address.sin_addr), ntohs(m_address.sin_port));
 
-        // Send welcome message and ask for name
         const char *welcome_message = "Welcome to the server. Please enter your name: ";
         send(m_newSocket, welcome_message, strlen(welcome_message), 0);
 
-        // Wait for the client to send their name
         memset(m_buffer, 0, BUFFER_SIZE_SERVER);
         int valread = read(m_newSocket, m_buffer, BUFFER_SIZE_SERVER);
         if (valread > 0)
@@ -33,7 +31,6 @@ Server::Server(std::uint16_t port) : m_port(port)
             std::string client_name(m_buffer);
             client_name.erase(std::remove(client_name.begin(), client_name.end(), '\n'), client_name.end());
 
-            // Add new socket to vector of client_info
             if (client_info.size() < MAX_CLIENTS)
             {
                 {
@@ -42,15 +39,13 @@ Server::Server(std::uint16_t port) : m_port(port)
                 }
                 std::print("Adding to list of sockets as {}, name: {}\n", client_info.size() - 1, client_name);
 
-                // Send confirmation message
                 std::string confirm_message =
                     "Hello, " + client_name + "! You're now connected. Type your messages or 'QUIT' to exit.\n";
                 send(m_newSocket, confirm_message.c_str(), confirm_message.length(), 0);
 
-                // Create a new thread to handle this client
                 std::thread client_thread(&Server::handle_client, m_newSocket, std::cref(client_name),
                                           std::ref(client_info));
-                client_thread.detach(); // Detach the thread so it can run independently
+                client_thread.detach();
             }
             else
             {
@@ -103,7 +98,6 @@ void Server::handle_client(std::int32_t client_socket, const std::string &client
 
         if (valread <= 0)
         {
-            // Client disconnected
             std::lock_guard<std::mutex> lock(g_clientMutex);
             auto it = std::find_if(client_info.begin(), client_info.end(),
                                    [client_socket](const std::pair<std::int32_t, std::string> &element) {
@@ -120,12 +114,10 @@ void Server::handle_client(std::int32_t client_socket, const std::string &client
         }
         else
         {
-            // Process the message
             std::string message(buffer);
             message.erase(std::remove(message.begin(), message.end(), '\n'), message.end());
             std::print("Received message from {}, (socket {}): {}\n", client_name, client_socket, message);
 
-            // Check for quit message
             if (message == "QUIT")
             {
                 std::string goodbye_message = "Goodbye, " + client_name + "!\n";
@@ -147,7 +139,6 @@ void Server::handle_client(std::int32_t client_socket, const std::string &client
             }
             else
             {
-                // Echo the message back to the client
                 std::string response = "Server received: " + message + "\n";
                 send(client_socket, response.c_str(), response.length(), 0);
             }
