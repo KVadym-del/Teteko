@@ -5,6 +5,7 @@
 #include <getopt.h>
 #include <string>
 
+#include "headers/client.hpp"
 #include "headers/server.hpp"
 
 void print_usage(void)
@@ -52,7 +53,7 @@ std::int32_t main(std::int32_t argc, char* argv[])
             print_usage();
             return 1;
         }
-        int port_num = std::stoi(port);
+        std::int32_t port_num = std::stoi(port);
         if (port_num < 0 || port_num > 65535) {
             std::print(stderr, "Error: Invalid port number\n");
             return 1;
@@ -60,12 +61,19 @@ std::int32_t main(std::int32_t argc, char* argv[])
         std::print("Running in server mode on port {}\n", port_num);
         Server server{static_cast<std::uint16_t>(port_num)};
     } else if (mode == "client") {
+        std::int32_t port_num = std::stoi(port);
+        if (port_num < 0 || port_num > 65535) {
+            std::print(stderr, "Error: Invalid port number\n");
+            return 1;
+        }
         if (port.empty() || ip.empty()) {
             std::print(stderr, "Error: Both port and IP are required for client mode\n");
             print_usage();
             return 1;
         }
         std::print("Running in client mode, connecting to {} on port {}\n", ip, port);
+        Client client{static_cast<std::uint16_t>(port_num), ip};
+        client.connect_to_server();
     } else {
         std::print(stderr, "Error: Invalid mode. Use 'server' or 'client'\n");
         print_usage();

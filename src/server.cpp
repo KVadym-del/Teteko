@@ -54,7 +54,7 @@ Server::Server(std::uint16_t port) : m_port(port) {
                 int sd = *it;
                 if (FD_ISSET(sd, &readfds)) {
                     // Read the incoming message
-                    int valread = read(sd, m_buffer, BUFFER_SIZE);
+                    int valread = read(sd, m_buffer, BUFFER_SIZE_SERVER);
                     if (valread == 0) {
                         // Somebody disconnected, get their details and print
                         getpeername(sd, (struct sockaddr*)&m_address, (socklen_t*)&m_addrlen);
